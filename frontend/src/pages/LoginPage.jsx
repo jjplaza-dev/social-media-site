@@ -1,64 +1,47 @@
-import React, { useState } from "react";
+import axios from 'axios';
+import React, { useState } from 'react'
+import { useAuth } from '../context/authContext';
+import { useNavigate } from 'react-router-dom';
 
 function LoginPage() {
-  const [loginForm, setLoginForm] = useState({
+  const { setAuth } = useAuth()
+  const navigate = useNavigate()
+  const [form, setForm] = useState({
     email: "",
     password: "",
-  });
+  })
+  const [error, setError] = useState(null)
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setLoginForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleSubmit = (e) => {
+  const handleLogin = async(e) => {
     e.preventDefault();
-    console.log("Submitting login form:", loginForm);
-    // Here you would call your API login endpoint
-  };
+    try {
+      const res = await axios.post("/api/auth/login" , form, {withCredentials:true});
+      setAuth({accessToken: res.data.accessToken, role: res.data.role})
+      console.log(res.data);
+      navigate("/")
+    } catch (error) {
+        setError("Login failed. Please check your credentials.")
+        console.error(error)
+    }
+  } 
 
   return (
-    <section className="flex justify-center items-center h-screen bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow-lg rounded-2xl p-8 w-96"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
-
-        <label className="block mb-2 font-medium">Email</label>
-        <input
-          type="email"
-          name="email"
-          value={loginForm.email}
-          onChange={handleChange}
-          className="w-full p-2 mb-4 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter your email"
-          required
-        />
-
-        <label className="block mb-2 font-medium">Password</label>
-        <input
-          type="password"
-          name="password"
-          value={loginForm.password}
-          onChange={handleChange}
-          className="w-full p-2 mb-4 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter your password"
-          required
-        />
-
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200"
-        >
-          Login
-        </button>
+    <div className='max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-xl'>
+      <h2 className='text-2xl font-bold mb-4'>Login</h2>
+      {error && <p className='text-red-500 mb-4'>{error}</p>}
+      <form className='space-y-4'>
+          <div>
+            <input className='w-full p-2 border rounded' type='email' placeholder='Email' value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} required/>
+          </div>
+          <div>
+            <input className='w-full p-2 border rounded' type='password' placeholder='Password' value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} required/>
+          </div>
+          <button className='w-full bg-green-400 hover:bg-green-500 py-1 rounded cursor-pointer' onClick={handleLogin}>
+            Login
+          </button>
       </form>
-    </section>
-  );
+    </div>
+  )
 }
 
-export default LoginPage;
+export default LoginPage

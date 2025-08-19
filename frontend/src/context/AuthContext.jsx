@@ -11,9 +11,9 @@ export const AuthProvider = ({children}) => {
         const checkAuth = async() => {
             try {
                 const res = await axios.get('/api/auth/refresh', {
-                    withCredentials: true
+                withCredentials: true
                 })
-                setAuth({accessToken: res.data.accessToken, role: res.data.role})
+                setAuth({accessToken: res.data.accessToken, role: res.data.user.role, email: res.data.user.email})
             } catch (error) {
                 setAuth(null)
             } finally {
